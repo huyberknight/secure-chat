@@ -37,6 +37,9 @@ class Server:
             self.s_sock.close()
 
     def _handle_client(self, c_sock: socket.socket, c_addr):
+        """
+        Receive packets from the client.
+        """
         username = None
         try:
             while True:
@@ -83,6 +86,9 @@ class Server:
             c_sock.close()
 
     def _handle_message_request(self, c_sock: socket.socket, data: dict):
+        """
+        The server processes message packets sent from the client.
+        """
         from_user, to_user, enc_message = (
             data.get("from"),
             data.get("to"),
@@ -110,6 +116,9 @@ class Server:
             log(level="info", message=f"Error sent to '{from_user}': {error_msg}")
 
     def _handle_system_request(self, c_sock: socket.socket, data: dict):
+        """
+        The server handles system type packets sent from the client.
+        """
         action = data.get("action")
         from_user = data.get("from")
         if action == "register":
@@ -202,6 +211,9 @@ class Server:
                 )
 
     def _remove_client(self, username: str):
+        """
+        Remove client from list.
+        """
         with self.lock:
             if username in self.clients:
                 del self.clients[username]

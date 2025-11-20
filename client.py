@@ -28,8 +28,8 @@ class Client:
             else:
                 log(level="error", message=f"Please enter valid username.")
                 continue
-        self.public_key, self.private_key = generate_key_pair()
 
+        self.public_key, self.private_key = generate_key_pair()
         try:
             self.c_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.c_sock.connect((self.host, self.port))
@@ -50,6 +50,9 @@ class Client:
             self.c_sock.close()
 
     def _recv_packet(self):
+        """
+        Receive packets from the server.
+        """
         while True:
             try:
                 raw_data = self.c_sock.recv(BUFFER_SIZE)
@@ -73,6 +76,9 @@ class Client:
         _exit(1)
 
     def _handle_message_packet_response(self, data: dict):
+        """
+        Handle message type packets sent by the server.
+        """
         from_user, enc_key, enc_message, signature = (
             data.get("from"),
             data.get("enc_key"),
@@ -93,6 +99,9 @@ class Client:
             )
 
     def _handle_system_packet_response(self, data: dict):
+        """
+        Handle system type packets sent by the server
+        """
         if data.get("status") == "error":
             log(level="error", message=f"{data.get('result')}")
             sleep(1)
@@ -138,6 +147,9 @@ class Client:
                     del self.public_keys_cache[target]
 
     def _handle_user_input(self):
+        """
+        Display CLI interface and process input data.
+        """
         print("\nType 'help' for commands.")
         while True:
             sleep(0.1)
@@ -174,6 +186,9 @@ class Client:
                     )
 
     def _prepare_verify_message(self, from_user: str, signature: str, dec_message: str):
+        """
+        Prepare to authenticate the digital signature of the message content.
+        """
         if from_user in self.public_keys_cache:
             self._verify_message(
                 from_user=from_user, signature=signature, dec_message=dec_message
@@ -199,6 +214,10 @@ class Client:
             )
 
     def _verify_message(self, from_user: str, signature: str, dec_message: str):
+        """
+        Digital signature authentication of message content.
+        """
+        log(level="info", message="Verifying signature...")
         sender_public_key = self.public_keys_cache.get(from_user)
         verify_message = verify_signature(
             public_pem=sender_public_key, signature_b64=signature, message=dec_message
@@ -212,6 +231,9 @@ class Client:
             )
 
     def _prepare_send_message(self, to_user: str, message: str):
+        """
+        Prepare to send message to recipient.
+        """
         if to_user == self.username:
             log(level="error", message=f"You cannot send a message to yourself.")
             return
@@ -238,6 +260,9 @@ class Client:
         # print(self.pending_message)
 
     def _send_message(self, to_user: str, message: str):
+        """
+        Send message to recipient.
+        """
         try:
             recipient_public_key = self.public_keys_cache[to_user]
             # key = b"01234567890123456789012345678901"
